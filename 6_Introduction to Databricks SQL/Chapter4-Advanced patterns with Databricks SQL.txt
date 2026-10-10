@@ -1,0 +1,124 @@
+                  Common data engineering patterns
+Handling incoming data
+
+Incremental append
+  Add all new data to end of existing table
+      INSERT INTO students
+      TABLE visiting_students;
+
+Change Data Capture (CDC)
+  Integrates data into existing table
+      MERGE INTO target USING source
+      ON target.key = source.key
+      WHEN MATCHED THEN UPDATE SET *;
+
+
+Data optimizations
+
+OPTIMIZE
+  Compact subset of data together
+  Reduces the "small file problem"
+
+Z-ORDER
+  Similar to indexing for database systems
+  Co-locates related data to same files
+  Can reduce time to read data
+
+Examples
+    > OPTIMIZE table_name;
+    
+    > OPTIMIZE table_name
+    WHERE date >= '2024-01-01';
+    
+    > OPTIMIZE table_name
+    WHERE date >= current_timestamp()
+    - INTERVAL 1 day
+    ZORDER BY (eventType);
+
+
+--
+Virtual environment error, excercise couldnt be done
+Video: Updating coffe sales data - Excercises: Optimizing data with SQL, Using Insert, Using Merge
+---
+
+                                Advanced data analysis patterns
+Sub queries
+Achieved through "nesting" SQL queries
+  Nested query is thought of as a new "table"
+  Effectively similar to creating a view
+Great for a variety of use cases
+  Retrieve results of another query
+  Simplify complex queries
+  Aggregation within a query
+
+  SELECT store, totalRev, product
+  FROM (
+    SELECT count(*) as count,
+    sum(revenue) as totalRev,
+    min(price) as minPrice,
+    max(units) as maxUnits,
+    region,
+    store,
+    product
+    FROM sales
+    GROUP BY region, store, product
+  ) q
+
+
+                                                Window functions
+A category of SQL functions and techniques
+Performs a calculation across a specific range of rows
+  Rows have some kind of relation to each
+  other
+Examples:
+  Calculating a metric based on a time range
+  Calculating change over subsequent rows
+  Calculating across several dimensions
+
+SELECT name,
+dept,
+RANK() OVER
+(PARTITION BY dept
+ORDER BY salary) AS rank
+FROM employees;
+
+name dept          salary rank
+Lisa Sales         10000  1
+Alex Sales         30000  2
+Fred Engineering   21000  1
+Tom Engineering    23000  2
+
+                                      Advanced Databricks SQL functions
+RANK()
+Compares rows within a given partition and calculated a rank for each row
+
+SELECT a,
+b,
+RANK() OVER(PARTITION BY a ORDER BY b DESC),
+FROM table_name;
+
+a b rank
+A1 3 1
+A1 1 3
+A1 2 2
+A2 1 1
+
+LAG() and LEAD()
+Returns either the preceding ( LAG() ) or subsequent ( LEAD() ) value from row
+
+SELECT a,
+b,
+LAG(b) OVER (PARTITION BY a ORDER BY b)
+FROM table_name;
+
+a b lag
+A1 3 NULL
+A1 1 3
+A1 2 1
+A2 1 NULL
+
+
+--
+Virtual environment error, excercises couldnt be done
+Video: Analazing coffe sales by store - Excercises: writing a sub-query, Using a window function, using windows and subqueries together
+---

@@ -1,0 +1,74 @@
+                                        Creating and managing tables
+Create and manage
+  Databricks databases group related tables for organization.
+  Creating a database sets up a scalable structure.
+  Organized data aids access and management.
+  Tables store structured data for queries.
+
+Effective management
+  Effective management involves querying, updating, and deleting data.
+  Deletion should be done carefully to avoid data loss.
+  Safe deletion practices include data backup before removal.
+
+Using the LOCATION keyword
+  Databricks automatically manages table storage locations.
+  Default setup simplifies data storage management.
+  Custom storage paths can be set using the LOCATION keyword.
+  Flexibility is important for compliance, cost, or performance needs
+
+Overriding the default storage
+  LOCATION overrides default storage.
+  Store data in external cloud locations:
+    examples: AWS S3, Azure Blob Storage
+  Useful when integrating with existing infrastructure.
+  Ensures compliance for sensitive data.
+
+Dynamic data management
+  LOCATION supports dynamic data management.
+  Move data easily if regulations or costs change.
+  Relocate data seamlessly without disruption.
+  Maintain structure and workflow during changes.
+
+
+                                                          Views and Temp views
+First look at views
+  A view saves a query for reuse as a table Views are persistent
+  Remain available until deleted
+
+View syntax
+  CREATE VIEW or CREATE OR REPLACE VIEW create/update views.
+  Useful for dashboards, reports, and consistent query results.
+
+  -- Create a view to get recipes with a preparation time of 30 minutes or less
+  CREATE VIEW QuickRecipes AS
+  SELECT recipe_id, recipe_name, ingredients, preparation_time
+  FROM recipes
+  WHERE preparation_time <= 30;
+
+Temp views
+  Temp views are temporary and last only for the current session
+  Automatically erased when the session ends 
+  Created using
+    CREATE OR REPLACE TEMP VIEW
+  Ideal for quick analysis, staging, or exploratory tasks
+
+Benefits of views
+  Ideal for frequently accessed data 
+    reusable charts, reports, or logic
+  Ensures consistent data across users and saves time
+  Simplifies collaboration with shared data logic
+
+Benefits of temp views
+  Ideal for quick tasks
+  Flexible tools for staging/transformation
+  Auto-delete at session end
+    Reduce database clutter
+
+Summary
+  Views offer persistent, reusable outputs
+  Temp views support single-session tasks
+  Effective use leads to:
+    Streamlined workflows
+    Enhanced collaboration
+    Optimized performance
+

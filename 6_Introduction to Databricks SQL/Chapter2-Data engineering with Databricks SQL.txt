@@ -1,0 +1,269 @@
+                                    Ingesting Data
+      Lakeflow Connect
+Built-in connectors for ingesting data
+  Databases
+  SaaS Applications
+Creates pipelines to keep data up to date
+
+      Data upload
+Manually upload your files
+  CSV, Parquet, etc.
+Quickly create new Delta tables
+Great for ad hoc data upload
+
+
+Upload data manually
+**In this exercise, we'll practice a simple data ingestion process 
+to get familiar with bringing data into Databricks. **
+
+Ingesting data is a key first step in preparing for analysis. Using the Data Ingestion section, 
+we can quickly upload local files and make them available for immediate exploration and ad hoc analysis.
+
+1. Navigate to the Data Ingestion section of the platform.
+Using the Create or modify table option, you will bring in the CSV file vendor_data from the local environment.
+The CSV file is in the following location: Desktop > Datasets.
+
+2. Navigate to the Data Ingestion section of the platform.
+Using the Create or modify table option, you will bring in the CSV file vendor_data from the local environment.
+The CSV file is in the following location: Desktop > Datasets.
+
+3. Navigate to the Data Ingestion section of the platform.
+Using the Create or modify table option, you will bring in the CSV file vendor_data from the local environment.
+The CSV file is in the following location: Desktop > Datasets.
+
+4. How many columns of data were uploaded into your table?
+R//: 7
+
+
+
+Using COPY INTO
+In this exercise, we will practice using the COPY INTO command to ingest additional data for analysis.
+
+The manual data upload was a great solution for creating a net-new data table, but what should we do when there is additional data we want to add to a Delta table? This is where the COPY INTO command comes in handy.
+
+1. Navigate to the Catalog and select the default schema in the databricks_ws_... catalog.
+Create a new volume using the Create option in the top right corner of the screen.
+Make sure to select Managed volume and call it "managed_vendor_data". This will create a folder in cloud storage where you can upload data files directly and manage access through the Unity Catalog.
+
+2. Within the new volume created, upload the CSV file vendor\_data\_extra, which is located in Desktop > Datasets folder.
+After uploading the file, in the Overview section, copy the file path for this upload using the menu to the right of the file name.
+
+
+/Volumes/databricks_ws_e9f291e8_693d_4620_876d_e925f3ad8e29/default/managed_vendor_data
+
+3. Navigate to the SQL Editor and write the below query.
+This query will use the COPY INTO command, and will ingest our newly uploaded file into our already existing vendor\_data table that you created in the previous exercise.
+
+
+COPY INTO databricks_ws_e9f291e8_693d_4620_876d_e925f3ad8e29.default.vendor_data
+FROM '/Volumes/databricks_ws_e9f291e8_693d_4620_876d_e925f3ad8e29/default/managed_vendor_data'
+FILEFORMAT = CSV
+COPY_OPTIONS ('mergeSchema' = 'true')
+
+4. How many rows were written into the table from our file?
+R//: 1001
+
+Question?
+Leveraging Auto Loader
+So far, we have shown how to ingest individual files, but how can we do this more efficiently and intelligently? This is where Auto Loader enters the conversation, as it provides the capability to incrementally process new files as they land in a specified location.
+
+Which of the following statements best describes how Auto Loader works when ingesting new data?
+R: Auto Loader processes each data file exactly once, and incrementally adds them to the target table.
+
+
+
+
+                                            Cleaning and transforming data
+Cleaning data in the Bronze (raw) layer into the Silver (analytics-ready) layer
+Important step for downstream data tables
+Common activities:
+  Removing NULL values
+  Standardize values
+  Adjusting data types
+
+CREATE TABLE silver_layer AS (
+SELECT DISTINCT c.id,
+  c.last_name || ', ' || c.first_name
+  AS name,
+  format(s.date,'YYYY-mm-dd')
+  AS sale_date,
+  round(s.price, 2)
+  AS sale_price
+  s.item_name
+  FROM sales_data s
+LEFT JOIN contacts c on c.id = s.id)
+
+                                                      Aggregating data
+Combining and simplifying data from Silver layer into Gold (BI-ready) layer
+Meant for a specific business intelligence need
+  Great candidate for views
+Common activities:
+  Removing extraneous columns
+  Aggregating across dimensions
+  Calculating metrics / KPIs
+
+CREATE VIEW q3_revenue AS (
+  SELECT sum(revenue) AS total_rev,
+  count(*) AS total_count,
+  total_rev / total_count AS avg_sale,
+  category,
+  item
+  FROM silver_layer
+WHERE date BETWEEN '2024-07-01'
+  AND '2024-09-30'
+GROUP BY category, item)
+
+
+
+
+Cleaning up raw tables
+In this exercise, you will be uploading a messy dataset and cleaning it up so
+you or your colleagues can perform proper analyses.
+
+In the real world of data, most of the datasets we receive are going to be messy. 
+As a data analyst or engineer, you often will need to clean up our data.
+
+1. Using Data Ingestion upload the CSV file employee_data_messy into the default schema
+of the databricks_ws_... catalog.
+The file is located in the Desktop > Datasets folder.
+Take a look at the sample data to understand its contents a bit.
+
+2. 
+-Navigate to the SQL Editor by creating a new query window from the overview page of the new table. Call the query "Clean Employee Data".
+-Write a new query that selects all of the rows from the table employee_data_messy.
+-Use the CASE expression to modify the DATE_OF_JOINING column.
+    -If there is a value already, then we want to keep that value. Otherwise, 
+    we want to put in today's date using the CURRENT_DATE() expression.
+    -Call the new column "JOINING_DATE"
+-Your query will look something like this:
+
+    SELECT *,
+        CASE WHEN ___ IS NOT NULL THEN ___
+        ELSE CURRENT_DATE() END AS JOINING_DATE
+    FROM ___
+
+
+    select *,
+          case when DATE_OF_JOINING is not null then DATE_OF_JOINING
+          else current_date() 
+          end as JOINING_DATE
+    from `databricks_ws_0de04d4b_9148_4d6c_8a83_f582348df881`.`default`.`employee_data_messy` limit 100;
+
+3. Now modify your query to filter out any rows that have missing data in 
+the AGENT_ID column using either the DISTINCT expression or a WHERE clause.
+
+4. Now, update your query in order to write this data to a new table titled "employee_data_silver".
+Use the CREATE TABLE AS (CTAS) framework to do so. Your query will look like the following:
+
+  CREATE TABLE ___ AS 
+  (SELECT DISTINCT *,
+      CASE WHEN ___ IS NOT NULL THEN ___
+      ELSE CURRENT_DATE() END AS DATE_OF_JOINING
+  FROM ___)
+
+  create table employee_data_silver as 
+  (select distinct *,
+      case when DATE_OF_JOINING is not null then DATE_OF_JOINING
+      else current_date() 
+      end as JOINING_DATE
+  from `databricks_ws_0de04d4b_9148_4d6c_8a83_f582348df881`.`default`.`employee_data_messy`);
+
+
+
+
+
+Creating the silver layer
+In this exercise, you'll enhance a new insurance claims dataset by joining it with information about our agents.
+
+As a data engineer, your goal is to continuously refine and improve datasets so that other data teams can work with high-quality, useful data.
+
+The resulting data table is part of the Online Analytical Processing (OLAP) workflow. OLAP focuses on creating optimized datasets that support faster and more efficient analytics compared to traditional data models, such as the star schema.
+
+1. 
+-Using Data Ingestion upload the CSV file insurance_data_sample into the default schema
+of the databricks_ws_... catalog.
+-The file is located in the Desktop > Datasets folder.
+-Name this table "insurance_data_sample".
+
+2.
+Navigate to the SQL Editor by creating a new query window from the overview page 
+of the new table. Call the query "Agent Customer Analysis".
+Start by selecting all of the rows from the insurance_data_sample table you just created.
+
+3.
+-Now we want to join the employee_data_silver table that we created in the previous exercise. If you cannot find this, find and run "solch210cleaninguprawtables" from the Queries section.
+-Join the employee_data_silver table using a LEFT JOIN, and display the AGENT_ID from the insurance_data_sample table and the EMP_ACCT_NUMBER from the employee_data_silver.
+-Use the AGENT_ID from both tables for the join key.
+
+    select 
+        ids.AGENT_ID,
+        eds.EMP_ACCT_NUMBER
+    from `databricks_ws_0de04d4b_9148_4d6c_8a83_f582348df881`.`default`.`insurance_data_sample` as ids
+    left join databricks_ws_0de04d4b_9148_4d6c_8a83_f582348df881.default.employee_data_silver as eds
+    on ids.AGENT_ID = eds.AGENT_ID
+    limit 100;
+
+4.
+-Update your query to include the PREMIUM_AMOUNT from the insurance_data_sample table and EMP_ROUTING_NUMBER from the employee_data_silver table in the output.
+-We want to clean up the data types of some of the different fields, so use the CAST() function to accomplish this:
+-EMP_ROUTING_NUMBER and EMP_ACCT_NUMBER should be STRING
+-Save the resulting table as "agent_customer_silver".
+
+    CREATE TABLE agent_customer_silver AS (
+    select 
+        ids.AGENT_ID,
+        CAST(eds.EMP_ACCT_NUMBER as STRING) as EMP_ACCT_NUMBER,
+        eds.AGENT_NAME,
+        ids.PREMIUM_AMOUNT,
+        CAST(eds.EMP_ROUTING_NUMBER as STRING) as EMP_ROUTING_NUMBER
+    from `databricks_ws_0de04d4b_9148_4d6c_8a83_f582348df881`.`default`.`insurance_data_sample` as ids
+    left join databricks_ws_0de04d4b_9148_4d6c_8a83_f582348df881.default.employee_data_silver as eds
+    on ids.AGENT_ID = eds.AGENT_ID);
+
+5.
+Which of the following best describes the process of moving from the Bronze layer to the Silver layer in the medallion architecture?
+R: Moving from Bronze to Silver creates datasets that are clean and ready for any kind of analytics 
+
+
+
+
+Creating a table of large premium claims
+In this exercise, you will combine different data engineering tasks together to create a new table. 
+This is a typical scenario as a data engineer, where you will need to combine several different 
+data engineering concepts together to achieve your end goal. Take the following scenario into consideration:
+
+  The VP of Claims Adjustments wants to better understand some of the larger claims that your company has received.
+  The VP   considers any claim with a premium of $100 or more as a "large claim" for this analysis. 
+  They want you to create a separate table that they can run a report against that meets the following criteria:
+    -Has a total count of unique customers by ID.
+    -Breaks down the count by the kind of insurance coverage they have for the claim.
+    -Limits the dataset to only rows where the premium amount is greater than or equal to $100, as a proxy 
+     for identifying larger claims.
+
+1. 
+In the SQL Editor, create a new query titled "Largest Claims".
+
+2. 
+Select the correct catalog and schema at the top of the query, and locate your insurance 
+table under the databricks_ws_... catalog and default schema.
+
+Note: Make sure the correct catalog and schema are set in the dropdown menus 
+next to the Run query button when opening a new SQL Editor query.
+
+3. 
+-Write a query that will give you the results that the VP is looking for, 
+using GROUP BY, DISTINCT, WHERE, and any other techniques you need.
+-Make sure that take into account all of the query criteria when writing your query. 
+Your query will look something like this:
+
+    CREATE TABLE large_claims AS
+    SELECT COUNT(DISTINCT ___) AS customer_count,
+    ___
+    FROM insurance
+    WHERE PREMIUM_AMOUNT >= 100 -- using premium as proxy for claim size
+    GROUP BY ___;
+
+-Make sure to save your query results to a table called "large_claims" in the same catalog and schema.
+
+4. How many claims fit the VP's criteria for the Property insurance type?
+R: 1263

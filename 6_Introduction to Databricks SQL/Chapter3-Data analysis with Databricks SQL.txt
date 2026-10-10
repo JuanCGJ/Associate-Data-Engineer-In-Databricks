@@ -1,0 +1,318 @@
+                                SQL query basics
+Based on ANSI SQL
+Common patterns and functions to other
+SQL syntaxes
+  SELECT ... FROM ... syntaxes
+  Built-in and custom functions
+  Query data tables in Unity Catalog or in other database systems
+
+SELECT
+    id,
+    name,
+    product,
+    store_id,
+    sales,
+    unit_price,
+    FROM
+    sales_data
+WHERE
+sales > 10 AND
+product IN ('widget', 'thingy')
+
+
+                                                Common functions
+Databricks SQL functions mirror some of
+the most common operations in SQL,
+    Python, and Spark
+    ROUND() and FORMAT_NUMBER()
+    CONCAT() , LEFT() , and RIGHT()
+    DATE() , DATE_ADD() , and DATE_DIFF()
+    CASE , IF() , and ISNULL()
+    FROM_CSV() and FROM_JSON()
+Create a custom User Defined Function
+(UDF)
+
+SELECT
+    id,
+    initcap(name) as name,
+    right(product, 10) as productSKU,
+    store_id,
+    int(sales) as numSales,
+    round(unit_price, 2) as unit_price
+FROM
+sales_data
+WHERE
+sales > 10 AND
+product IN ('widget', 'thingy')
+
+
+
+                                  Visualizations
+Visual representations of our query results
+Support for the most common visual types
+    Bar and line charts
+    Donut charts
+    Map visualizations
+    Pivot tables
+
+
+
+
+
+Analyzing insurance claims
+The query is the foundation for all analyses in Databricks SQL. 
+In this exercise, we will be exploring the basics of crafting a query using
+the ANSI SQL language within Databricks, and leveraging the datasets at our disposal in Unity Catalog.
+
+1. Navigate to the SQL Editor and create a new query titled "Insurance Claim Analysis".
+Begin by selecting all of the rows from the insurance table in the databricks_ws_... catalog and default schema.
+Take a look at the data and get a good understanding of what information is in here.
+
+2. Now, modify your query to only include the following fields:
+
+CUSTOMER_ID
+PREMIUM_AMOUNT
+CLAIM_AMOUNT
+POLICY_EFF_DT
+REPORT_DT
+TXN_DATE_TIME
+INSURANCE_TYPE
+HOUSE_TYPE
+INCIDENT_STATE
+INCIDENT_SEVERITY
+
+3. Modify your query once again to include the following changes:
+
+Filter out any claims that have a value of "Minor Loss" for the INCIDENT_SEVERITY type.
+Filter for claims that are either "Auto", "Motor", or "Property".
+
+    SELECT 
+        CUSTOMER_ID,
+        PREMIUM_AMOUNT,
+        CLAIM_AMOUNT,
+        POLICY_EFF_DT,
+        REPORT_DT,
+        TXN_DATE_TIME,
+        INSURANCE_TYPE,
+        HOUSE_TYPE,
+        INCIDENT_STATE,
+        INCIDENT_SEVERITY 
+    FROM insurance
+    WHERE INCIDENT_SEVERITY = 'Minor Loss'
+        AND INSURANCE_TYPE IN ("Auto", "Motor", "Property")
+    
+
+4. How many claims meet our specific criteria thus far?
+R: 2187
+
+
+
+
+Supplementing queries with functions
+Queries, like the one we created in the last exercise, often start off as basic data retrieval
+from our source tables. In this exercise, we will expand on this query and, using different
+functions, gain more insight our query results.
+
+1. Open your query "Insurance Claim Analysis" from the previous exercise.
+If you can't find this, open the query "ex_ch3_5_supplementing_queries_with_functions" from 
+the Queries section.
+
+2. Assuming these are each customer's first claims, we want to ensure timely and sufficient support.
+    Using the date_diff function, update the existing query to include the following new fields:
+        "CustomerMonths", as the number of months between the POLICY_EFF_DT and REPORT_DT fields.
+        "PaymentDays", as the number of days between the REPORT_DT and TXN_DATE_TIME fields.
+
+3. These metrics help identify customer groups with varying churn risk, which is the 
+likelihood that a customer will stop doing business with the company. Newer customers 
+with longer payment delays may be more likely to churn, and vice versa.
+
+Update the query to include a new field, called "ChurnRisk", which uses the 
+CustomerMonths and PaymentDays as evaluation criteria.
+
+SELECT 
+    CUSTOMER_ID,
+    PREMIUM_AMOUNT,
+    CLAIM_AMOUNT,
+    POLICY_EFF_DT,
+    REPORT_DT,
+    TXN_DATE_TIME,
+    INSURANCE_TYPE,
+    HOUSE_TYPE,
+    INCIDENT_STATE,
+    INCIDENT_SEVERITY,
+    date_diff(MONTH, POLICY_EFF_DT,REPORT_DT) AS `CustomerMonths`,
+    date_diff(DAY, report_dt, TXN_DATE_TIME) AS `PaymentDays`,
+    CASE 
+        WHEN CustomerMonths <= 12 AND PaymentDays > 30 THEN 'High'
+        WHEN CustomerMonths > 12 AND PaymentDays <= 30 THEN 'Low'
+    ELSE 'Medium' END AS `ChurnRisk`
+FROM insurance
+WHERE INCIDENT_SEVERITY != 'Minor Loss'
+
+4. Which of the following statements best summarizes the purpose of the functions we used in this query?
+R:We calculated specific KPIs on customer response time using date_diff, and we used the CASE statement to compare specific criteria and put customers into different "buckets" based on risk.
+
+
+
+
+
+Visualizing query results
+Queries are great at returning row-level and granular information to answer a particular question, but they are often not sufficient for a data analyst. In this exercise, we will be using the results of our previous query and will generate visualizations to better answer questions about our customer service.
+
+1.
+Navigate to the SQL Editor and open your previous query named "Insurance Claim Analysis".
+If you can't find this, you can find and open the query "ex_ch3_6_visualizing_query_results" from the Queries section.
+
+2. Let's create a visualization called "Claims over time" that meets the following criteria:
+
+    Visualization type: "Line"
+    X Column: REPORT_DT
+    Set the REPORT_DT to be at the month granularity level
+    Y Column: CLAIM_AMOUNT
+    Group by: INSURANCE_TYPE
+
+3. Save this visualization, and take a look at the chart to understand what the data is telling you.
+In this case, we seem to have significantly more claims for Property insurance than in Auto, 
+and could be an area to focus on.
+
+4. 
+Create another visualization, and name it "Churn risk claim amounts".
+Make it a bar chart that shows ChurnRisk on the X axis, and the count and average of CLAIM_AMOUNT on the Y axis.
+Save the visualization, and look at what the results tell you.
+
+5.Which of the following best describes the results from our last visualization "Churn risk claim amounts"?
+R:There are many more "Low Risk" customers, but the average claim amount of the "High Risk" customers is just as high as the "Low Risk" customers.
+
+
+                                          Creating an analytics application
+
+Filters and parameters
+Filters
+Creates a sub-selection of the resulting rows based on the specified value or criteria
+Functions the same as a WHERE clause in a SQL query
+  Text-based, numerical, date ranges, dropdowns
+
+Parameters
+Arbitrary text values that can be injected into a SQL query
+Often can be used as a filter
+Also able to inject other text values
+  Dynamically add fields to query
+  Change the behavior of a function
+
+                                            Dashboards in Databricks SQL
+Collection of visualizations from multiplequeries and tables
+Allows for a more dynamic and userfriendly experience for understanding data
+  Leverage existing queries / visualizations
+  Create new queries and visualizations ad hoc
+  Bring in advanced logic with AI / LLMs
+Shareable through a URL
+
+                                            Partner Connect
+Leverage an extensive network of partner technologies with your lakehouse architecture
+Directly connect your favorite BI tool
+  Scalability and performance of compute with Databricks
+  User-friendly and powerful BI capabilities with Power BI, Tableau, etc.
+Keep users with the tools they are familiar with
+
+The role of Partner Connect
+Which of the following best describes how Partner Connect fits into the broader lakehouse vision?
+R:  Partner Connect allows for end users to connect their favorite tool to Databricks compute, leveraging
+the compute power and access data through Unity Catalog governance.
+Perfect! This is exactly the role of Partner Connect: extending the reach of the Databricks lakehouse into other technologies, while maintaining all the benefits of a single lakehouse platform.
+
+
+
+Adding filters to dashboards
+Dashboards are a great way to present your data in a visual and intuitive manner. 
+In this exercise, we will begin by providing a larger dataset to our dashboard, and allow 
+our users to interactively select the shown data through the use of a dashboard filter. 
+These filters function like WHERE clauses in the background, but are much more user-friendly.
+
+1. 
+Navigate to the Dashboards section of the Databricks UI.
+Create a new dashboard using the Create Dashboard option.
+Name the new dashboard "Agent Analysis Dashboard".
+
+2. 
+Navigate to the Data tab of the dashboard. Click + Create from SQL to create a 
+new dataset by joining the insurance and employee tables together.
+You will only need the AGENT_NAME field from the employee table.
+Call this new table "Insurance Agents" and hit Run.
+
+SELECT I.*,
+    E.AGENT_NAME
+FROM INSURANCE I 
+LEFT JOIN employee E 
+ON E.AGENT_ID = I.AGENT_ID;
+
+3. 
+Now, click on a page tab (e.g., Untitled page 1) to open the canvas. 
+Add the following widgets to the dashboard:
+
+A text box widget to the top of the dashboard with the title "Agent-level Insurance Claims Analysis".
+A bar chart showing the total CLAIM_AMOUNT by INSURANCE_TYPE.
+A histogram showing the distribution of the AGE of our customers.
+
+4.
+Now, add a filter widget to the dashboard. Have this widget be a date range picker based on the REPORT_DT field.
+
+5.
+What is the total submitted claim amount (in $M) for Property insurance between July 1, 2020 and August 30, 2020?
+R: 5.65M
+
+
+
+Using parameters in queries
+Filters are a great way to add in a sub-selection capability to our dashboards, 
+but can be somewhat limited depending on what we are trying to accomplish.
+In this exercise, we will explore a basic example of how to use a parameter in our dashboard 
+to better provide interactivity to our end users
+
+1. 
+Navigate to the Dashboards section and open your "Agent Analysis Dashboard" you created in the previous exercise.
+Reset all of the filters previously applied to the dashboard.
+
+2.
+Open the Data tab of the dashboard and go into your Insurance Agent query.
+Add a WHERE clause to the bottom of your query. This WHERE clause should use the LIKE operator to compare the AGENT_NAME field against a string.
+Add a parameter and call it "agentName". To update the name of your parameter, change the text after the : in your query after you insert the parameter.
+Put this parameter in between two % symbols using the concat() function so we have wildcard operators in our search.
+Here is an example of what this function would look like: concat('%', :parameter, '%')
+Press Run to run your query.
+
+SELECT I.*,
+    E.AGENT_NAME
+FROM INSURANCE I 
+LEFT JOIN employee E 
+ON E.AGENT_ID = I.AGENT_ID
+WHERE E.AGENT_NAME LIKE concat('%', :agentName, '%');
+
+3.
+Navigate to a page tab on your dashboard and add a new filter widget to the canvas.
+Put the agentName parameter in this filter.
+
+4.For all agents with "Steve" in their name, which `INSURANCE_TYPE` has the highest claim amount?
+R: Property
+Correct! You correctly inserted a parameter into your query, allowing for more sophisticated filtering logic to your overall dashboard.
+
+
+
+Create an executive dashboard
+As a data analyst on the insurance operations team, you have been asked to 
+build a dashboard for executive leadership. The dashboard should summarize 
+claim volumes and amounts across different states, and allow leadership to filter the data by insurance type.
+
+1.  Navigate to the Dashboards section and create a new dashboard called "Leadership KPI Dashboard".
+
+2. In the Data tab of the dashboard, click + Add data source. In the dialog, switch to the All tab, then navigate to your catalog and default schema to add the insurance table as a dataset
+
+3. Click on a page tab to open the canvas, then create the following visualizations from the insurance dataset:
+
+  A bar chart showing the total CLAIM_AMOUNT by STATE.
+  A counter widget showing the total number of claims.
+
+4. Add a filter widget to the dashboard for INSURANCE_TYPE, allowing executives to focus on a specific insurance category across all visualizations.
+
+5. The executive team likes the dashboard but wants to quickly see three headline numbers — total claims, total claim amount, and average premium — without scrolling or filtering. Which addition to the dashboard would best meet this requirement?
+R: Three Counter widgets at the top of the dashboard, each displaying one of the headline numbers.
+Correct! Counter widgets display a single value prominently, making them ideal for KPIs that need to be understood at a glance.

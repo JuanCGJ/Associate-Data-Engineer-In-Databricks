@@ -1,0 +1,166 @@
+                                              Motivation
+Data Warehouses
+  Great for SQL workloads
+  Typically expensive
+  Proprietary technologies
+  Limited capabilities and integrations
+
+Data Lakes
+  Great for non-SQL workloads
+  Cost effective, lackluster performance
+  Open-source technologies
+  Unlimited capabilities
+
+                                      Data warehousing in the Lakehouse
+Benefits
+Single architecture for all workloads
+Flexibility and ownership with data
+Open-source technologies
+    Delta
+    ANSI SQL
+Cost effective solution
+
+Business Intelligence ecosystem
+Integrate directly with your BI tool of choice
+    Partner Connect
+    Databricks Connect
+    JDBC / ODBC
+Performance and scalability
+Keep users where they are
+
+
+                                                  EXPLORING DATABRICKS SQL
+EXPLORING SOME DATA
+1. Navigate to the Catalog section of the platform.
+Expand the databricks_ws... catalog, and then the default schema.
+Finally, select the insurance table.
+
+2. While viewing the insurance table, you can view a sample of the data directly by navigating to the Sample Data tab.
+Since we want to do more analysis on the dataset, create a new Query using the Create button in the top-right corner. This will take you to the SQL Editor section of the platform.
+
+3. Your code editor will now show the standard select all query for the insurance dataset.
+Update the query to determine how many rented houses (HOUSE_TYPE = "Rent") have a high risk segmentation (RISK_SEGMENTATION = "H").
+Standarf Query:
+--select * from `databricks_ws_9651b0e3_2185_427d_945b_e66e5c903dc2`.`default`.`insurance` limit 100;
+
+Updated Query:
+select * from `databricks_ws_9651b0e3_2185_427d_945b_e66e5c903dc2`.`default`.`insurance` where HOUSE_TYPE = "Rent" and RISK_SEGMENTATION = "H"
+
+4. How many claims were for rented homes and were from high-risk customers?
+R//: 505
+
+
+
+
+PARTNER CONNECT
+While Databricks has great capabilities to explore data, many users want to connect 
+their existing BI tools.
+
+In this exercise, we will explore using Partner Connect to create a
+production-quality connection between a Databricks SQL Warehouse and a BI tool
+
+1. Navigate to the Marketplace option using the menu on the left-hand side.
+2. Explore some of the different integrations that are possible with different technology partners.
+3. Navigate to the BI section and click on Power BI Desktop.
+    Click on the "Connect" button.
+    Select Serverless Starter Warehouse as the compute option.
+    Click Download connection file.
+      -This file will allow Power BI to connect with the selected Databricks SQL Warehouse.
+4. Which of the following best describes how Partner Connect enables users to connect Power BI to Databricks?
+R//: Creates a Power BI dataset which lets Power BI sends querys directly to a Databrikcs SQL Warehouse.
+Correct, By creating a connection file, Partner Connect gives Power BI the scalability, governance, and performance of a Databricks SQL Warehouse.
+
+
+                                            Databricks SQL key assets
+Helpful analogy
+- A tree consists of many different components, all of which make up the entire entity
+- In Databricks SQL, different components combine into a data warehouse solution
+
+Query
+The base "unit" of analysis in DatabricksSQL
+Runs SQL code against compute
+Uses ANSI SQL standard
+Process data from:
+  Unity Catalog
+  Delta tables
+  Data lake files
+  Data streams
+
+SQL Warehouse
+Compute cluster dedicated for SQL
+Optimizations (e.g. Photon)
+Simpler administration
+Easy scaling
+Queries and BI tools
+
+Tables versus views
+Tables
+  Physical manifestations of datasets
+  Written in Delta format
+  Readable and accessible outside of the
+  data pipeline
+  Can optimize data layout (partitioning, etc.)
+Views
+  Virtual representations of query results in Unity Catalog
+  Fast performance for reading data
+  Great for simplifying downstream queries
+    Source query has many joins, filters, etc.
+  Incremental data processing available
+
+Visualizations and dashboards
+Visualizations
+  Visual representations of a query result
+  Created relative to a single query
+Dashboards
+  Collection of several visualizations
+  Across multiple datasets / query results
+
+
+
+Create a query
+In this exercise, we will run a simple query to get familiar with the platform for SQL users.
+
+We know that, in Databricks SQL, the query is the core of all our analysis. 
+As a data analyst, we want to be very comfortable understanding our 
+way around the SQL Editor, the area of the platform where we can write different queries based on our data.
+
+1. Navigate to the SQL Editor portion of the Databricks platform, and create a new query.
+Name it "Average_Premiums".
+2. If needed, connect your SQL Editor to a SQL Warehouse using the compute dropdown button above the code area.
+In order to avoid having to write out the catalog and schema name each time, you can select the required catalog and schema from the dropdown menus next to the Run button.
+3. 
+  -Write a query that returns the average PREMIUM_AMOUNT by STATE using the 
+  insurance table located within in default schema of your user catalog.
+  -Make sure the average is rounded to two decimal places.
+  -Now, run the query
+4. What is the average premium cost for a customer in the state of Arizona? Answer format: $XX.XX
+R//: 89.47
+
+
+
+
+Build a visualization
+Now that we've written an initial query, let's expand our analysis with a visualization. Imagine a colleague asks:
+
+  To ensure more equitable premiums across customers, can you identify the lowest 
+  and highest outliers for average premiums in each state?
+
+Queries are great for creating tabular datasets but spotting insights in tables is often hard.
+To build on our query, let's create a visualization that makes it easier to explore the results.
+
+1. Locate your "Average_Premiums" query created in the previous exercise.
+    If you can't find this, find and use "ex_ch1_9_build_a_visualization" from the Queries section.
+
+2. On this query, create a new visualization.
+    Click on the + icon above the query results, and select Visualization.
+
+3. Specify this visualization as a horizontal bar chart. Configure the chart according to the below criteria:
+    X columns: avg(PREMIUM_AMOUNT)
+    Y column: STATE
+    Make sure the X columns aggregation is set to Sum.
+
+4.  Under the Data Labels option, make sure to enable the data labels option.
+Save this visualization and call it "Average Premium by State".
+
+5. Which pair of responses specify the states that have the lowest and highest average premiums (respectively)?
+R//: OK, GA.

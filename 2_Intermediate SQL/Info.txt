@@ -1,0 +1,2 @@
+Curso con teoria y ejercicios practicos: IntermidiateSQL
+falta agregar los resumenes .txt por capitulo
