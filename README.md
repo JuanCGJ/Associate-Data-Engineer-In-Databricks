@@ -130,7 +130,7 @@ Window functions in SQL and dot notation on a train schedule, natural language p
 ### 📌 Module 13 — Data Transformation with Spark SQL in Databricks
 > Folder: [`13_Data transformation SparkSQL Databricks`](./13_Data%20transformation%20SparkSQL%20Databricks)
 
-An end-to-end ETL pipeline on the `online_retail` dataset (108,361 transactions) in a live Databricks workspace: explicit schemas, a cleaning pipeline with quality metrics, broadcast joins verified in Photon plans, customer ranking with window functions, Structured Streaming into Delta with checkpoints, managed Delta tables, and a multi-task Databricks Job (debugged and re-run), plus Lakeflow's declarative model. **24 exercise screenshots.**
+An end-to-end ETL pipeline on the `online_retail` dataset (108,361 transactions) in a live Databricks workspace: explicit schemas, a cleaning pipeline with quality metrics, broadcast joins verified in Photon plans, customer ranking with window functions, Structured Streaming into Delta with checkpoints, managed Delta tables, and a multi-task Databricks Job (debugged and re-run), plus Lakeflow's declarative model. The notebook closes with an **end-to-end ETL summary** (extract → transform → load → orchestrate). **24 exercise screenshots.**
 
 ---
 
